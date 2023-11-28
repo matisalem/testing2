@@ -273,7 +273,7 @@ int ezThreeFourths(int x) {
     // shifting right by 2 == divide by 4
     int total = calculo >> 2;
 
-    return 2;
+    return total;
 }
 /*
  * logicalShift - shift x to the right by n, using a logical shift
