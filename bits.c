@@ -369,7 +369,7 @@ unsigned floatInt2Float(int x) {
 
     // find where most significant bit is
     // variables I'll use later, but somehow compiler threw an error if created later
-    int masGrande = 31;
+   // int masGrande = 31;
     int exponent = 31;
     int normalized = 0;
     int roundBit = 0;
@@ -397,13 +397,14 @@ unsigned floatInt2Float(int x) {
         exponent--;
     }
 
-
-    // normalize the fraction by aligning the msb of x to the leftmost position.
-    normalized = x << (31 - masGrande); // Left align the MSB
+    normalized = x << (31 - exponent); // Left align the MSB
 
     // get the exponent, and use 127 as bias becuase it is used to avoid having to store negative numbers
     // and in single-precision floating-point numbers, bias is 127
-    exponent += 127;
+    exponent = exponent + 127;
+
+    // normalize the fraction by aligning the msb of x to the leftmost position.
+   // normalized = x << (31 - masGrande); // Left align the MSB
 
     // Handle subnormal numbers
     if (exponent < 127) {
