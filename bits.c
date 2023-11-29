@@ -463,11 +463,11 @@ unsigned floatScale64(unsigned uf) {
         // multiply by 64, which is 2^6
         frac = frac << 6;
 
-        // if the number is normalized by the scaling
-        if (frac & 0x00800000) {
-            exp = (frac & 0x007F8000) << 1;
-            frac &= 0x007FFFFF;
+        if (frac & 0x00800000) {  // Normalization check
+            exp = 0x00800000;  // Set exponent to 1
+            frac &= 0x007FFFFF;  // Adjust fraction
         }
+
         return sign | exp | frac;
     }
 
