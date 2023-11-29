@@ -448,43 +448,47 @@ unsigned floatInt2Float(int x) {
  *   Rating: 4
  */
 unsigned floatScale64(unsigned uf) {
-    // Check for zero or negative zero
-    if ((uf & 0x7FFFFFFF) == 0) return uf;
+    // Check for zero, negative zero, NaN, and infinity
+    if ((uf & 0x7FFFFFFF) == 0 || (uf & 0x7F800000) == 0x7F800000) {
+        return uf;
+    }
 
     unsigned sign = uf & 0x80000000;
     unsigned exp = uf & 0x7F800000;
     unsigned frac = uf & 0x007FFFFF;
 
-    // Handle NaN and infinity
-    if (exp == 0x7F800000) return uf;
-
     // Handle denormalized numbers (very small numbers)
     if (exp == 0) {
-        frac = frac << 6; // Multiply the fraction by 64
+        frac <<= 6; // Multiply the fraction by 64
 
-        // Normalize the number if possible
-        while ((frac & 0x00800000) == 0 && frac != 0) {
-            frac <<= 1;
-            exp -= 0x00800000;
+        // Check if the number can be normalized
+        if (frac & 0x3F800000) {
+            // Count the number of leading zeros in the fraction part
+            int shift = 0;
+            while ((frac & 0x40000000) == 0) {
+                frac <<= 1;
+                shift++;
+            }
+            // Adjust exponent
+            exp = ((127 - shift + 6) << 23) & 0x7F800000;
+            frac &= 0x007FFFFF;
         }
-        if (exp < 0x00800000) {
-            // Still denormalized
-            return sign | (frac & 0x007FFFFF);
-        } else {
-            // Becomes normalized
-            return sign | 0x00800000 | (frac & 0x007FFFFF);
-        }
+        return sign | exp | frac;
     }
 
     // Handle normalized numbers
-    if (exp <= 0x78800000) {
-        exp += (6 << 23); // Scale the exponent
-        return sign | exp | frac;
+    exp = (exp >> 23) - 127; // Unbias the exponent
+    exp += 6; // Scale the exponent
+
+    // Check for overflow to infinity
+    if (exp >= 128) {
+        return sign | 0x7F800000; // Infinity with the same sign
     } else {
-        // Overflow to infinity
-        return sign | 0x7F800000;
+        exp = (exp + 127) << 23; // Rebias the exponent
+        return sign | exp | frac;
     }
 }
+
 
 
 
