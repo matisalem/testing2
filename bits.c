@@ -325,10 +325,11 @@ int greatestBitPos(int x) {
     // it turns off all bits that were set during the propagation, except the most significant one.
     int elon = (e^(e>>1));
 
-    // mask with only the most significant bit set
+    // mask with only the most significant bit set, this is for edge cases!
     int  mask = (1<<31);
 
-    // combine both masks to ensure the sign bit is set,
+    // first, combine both masks to ensure the sign bit is set right,
+    // and then take out the most significant bit from e. Return the result
     return (elon | mask) & e;
 }
 /*
