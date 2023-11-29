@@ -180,7 +180,7 @@ NOTES:
  */
 int bitNor(int x, int y) {
     // deMorgan's Law
-    return ~x&~y;
+    return ~x & ~y;
 }
 /*
  * TMax - return maximum two's complement integer
@@ -212,13 +212,13 @@ int tmax(void) {
 int getByte(int x, int n) {
 
     // shift n by 3. Each shift to the left by 1 == multiplying by 2, so w = n * 8
-    int w = n<<3;
+    int w = n << 3;
 
     // shift x by w, looking for the desired byte
-    x = x>>w;
+    x = x >> w;
 
     // this isolates the least significant byte
-    x = x&0xFF;
+    x = x & 0xFF;
     return x;
 }
 /*
@@ -230,12 +230,13 @@ int getByte(int x, int n) {
  *   Rating: 2
  */
 
-// PREGUNTAR
 int allEvenBits(int x) {
 
+    int mask = 0x55;
+
     // pares is the 32 bit representation of very odd = 0 & every even = 1
-    int mask = 0x55; // Allowed constant
     int pares = mask | mask << 8 | mask << 16 | mask << 24;
+
     // compare each bit of two numbers. Gives 1 if both bits are 1, and 0 if not
     int w = x & pares;
 
