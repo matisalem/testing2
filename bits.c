@@ -366,19 +366,25 @@ int isNonZero(int x) {
  *   Rating: 4
  */
 unsigned floatInt2Float(int x) {
-    // Define variables for sign, exponent, fraction, and mask for most significant bit
-    unsigned sign = 0;
-    int exponent;
-    unsigned fraction;
+
+    // find where most significant bit is
+    // variables I'll use later, but somehow compiler threw an error if created later
+    int masGrande = 31;
+    int exponent = 0;
+    int normalized = 0;
+    int roundBit = 0;
+    int stickyBit = 0;
+    unsigned fraction = 0;
     int mask = 1 << 31;
 
-    // Special case: If x is 0, return 0
+    unsigned sign = 0;
+
+    // if x == 0, return 0
     if (x == 0) return 0;
 
-    // Handle sign: if x is negative, set sign bit and convert x to positive
+    // if x is negative
     if (x < 0) {
-        sign = 0x80000000; // Set sign bit for negative numbers
-        // Special handling for INT_MIN: direct conversion to positive is not possible
+        sign = 0x80000000; // this is sign bit for negatives
         if (x == mask) {
             x = mask; // Keep x as INT_MIN
         } else {
@@ -386,15 +392,14 @@ unsigned floatInt2Float(int x) {
         }
     }
 
-    // Find the position of the most significant bit (MSB)
-    exponent = 31;
-    while (!(x & mask)) {
-        x <<= 1;
-        exponent--;
+    // until finds first 1 starting from left, keep going
+    while ((x & (1 << masGrande)) == 0) {
+        masGrande--;
     }
 
-    // Adjust for bias (127) in single-precision floating-point format
-    exponent += 127;
+    // get the exponent, and use 127 as bias becuase it is used to avoid having to store negative numbers
+    // and in single-precision floating-point numbers, bias is 127
+    exponent = masGrande + 127;
 
     // Handle subnormal numbers
     if (exponent < 127) {
@@ -406,9 +411,18 @@ unsigned floatInt2Float(int x) {
         fraction = (x & (~mask)) >> 8;
     }
 
-    // Rounding: Consider the bit right to the fraction and sticky bit
-    int roundBit = (x >> 7) & 1;
-    int stickyBit = x & 0x7F;
+
+    // normalize the fraction by aligning the msb of x to the leftmost position.
+    normalized = x << (31 - masGrande); // Left align the MSB
+
+
+    // get the bit immediately to the right of the fraction
+    roundBit = (x >> 7) & 1;
+
+    // remaining bits.
+    stickyBit = normalized & 0x7F;
+
+
     if ((roundBit && stickyBit) || (roundBit && (fraction & 1))) {
         fraction++;
         if (fraction >> 23) {
@@ -420,8 +434,23 @@ unsigned floatInt2Float(int x) {
 
     // Construct the final floating-point representation
     return sign | (exponent << 23) | (fraction & 0x007FFFFF);
-}
 
+
+    // clear the sign bit and shift it right by 8 bits
+    // because the fraction part of a single-precision floating-point number occupies 23 bits
+    //fraction = (normalized & 0x7FFFFFFF) >> 8;
+
+    // get the bit immediately to the right of the fraction
+    //roundBit = (normalized >> 7) & 1;
+
+    // remaining bits.
+   // stickyBit = normalized & 0x7F;
+    //if ((roundBit && stickyBit) || (roundBit && (fraction & 1))) fraction++;
+
+    // return the final number combination
+   // return sign | ((exponent << 23) & 0x7F800000) | (fraction & 0x007FFFFF);
+
+}
 /*
  * floatScale64 - Return bit-level equivalent of expression 64*f for
  *   floating point argument f.
