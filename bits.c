@@ -447,25 +447,39 @@ unsigned floatInt2Float(int x) {
  *   Max ops: 35
  *   Rating: 4
  */
-unsigned floatScale64(unsigned uf) {
-    int sign = uf & 0x80000000;
-    int num_loop = 6;
-    while (num_loop--) {
-        int exponent = uf & 0x7F800000;
-        int exponent_is_zero = !exponent;
-        if (exponent_is_zero) {
-            uf = sign | (uf << 1);
-        } else if (exponent != 0x7F800000) {
-            uf = uf + 0x800000;
-            exponent = uf & 0x7F800000;
-            // Check if grater than INF
-            if (exponent == 0x7F800000) {
-                uf = uf & 0xFF800000;  // clear fraction
+unsigned floatScale64(unsigned input) {
+    // Extracting the sign bit from the input
+    int signBit = input & 0x80000000;
+
+    // We need to multiply by 64, equivalent to 6 consecutive doublings (2^6)
+    for (int i = 0; i < 6; i++) {
+        // Extracting the exponent field from the input
+        int exponentField = input & 0x7F800000;
+
+        // Checking if the exponent is zero (denormalized number)
+        int isDenormalized = (exponentField == 0);
+
+        if (isDenormalized) {
+            // If denormalized, shift left by 1 (double the value)
+            input = signBit | (input << 1);
+        } else if (exponentField != 0x7F800000) {
+            // If not denormalized or infinity/NaN, increment the exponent
+            input += 0x800000;
+
+            // Re-extracting the exponent to check for overflow
+            exponentField = input & 0x7F800000;
+
+            // If the result is infinity (overflow), clear the fraction field
+            if (exponentField == 0x7F800000) {
+                input &= 0xFF800000;
             }
         }
     }
-    return uf;
+
+    // Return the final scaled value
+    return input;
 }
+
 
 
 
