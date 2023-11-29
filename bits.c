@@ -448,8 +448,8 @@ unsigned floatInt2Float(int x) {
  *   Rating: 4
  */
 unsigned floatScale64(unsigned uf) {
-    // Check for zero
-    if (uf == 0) return 0;
+    // Check for zero or negative zero
+    if ((uf & 0x7FFFFFFF) == 0) return uf;
 
     unsigned sign = uf & 0x80000000;
     unsigned exp = uf & 0x7F800000;
@@ -478,6 +478,7 @@ unsigned floatScale64(unsigned uf) {
         return sign | 0x7F800000; // Return infinity of the same sign
     }
 }
+
 
 
 
