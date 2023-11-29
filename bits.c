@@ -448,37 +448,37 @@ unsigned floatInt2Float(int x) {
  *   Rating: 4
  */
 unsigned floatScale64(unsigned uf) {
-
-    // begin by taking the sign, the exponent, and the fraction
     unsigned sign = uf & 0x80000000;
     unsigned exp = uf & 0x7F800000;
     unsigned frac = uf & 0x007FFFFF;
 
-    // return number if exponent is NaN
+    // Check for NaN or infinity
     if (exp == 0x7F800000) return uf;
 
-    // in case uf is Denormalized
+    // Handling denormalized numbers
     if (exp == 0) {
+        frac <<= 6; // Multiply fraction by 64
 
-        // multiply by 64, which is 2^6
-        frac = frac << 6;
-
-        // if the number is normalized by the scaling
+        // Check if it gets normalized
         if (frac & 0x00800000) {
-            exp = (frac & 0x007F8000) << 1;
-            frac &= 0x007FFFFF;
+            exp = 0x00800000; // Set to the smallest exponent for normalized numbers
+            frac &= 0x007FFFFF; // Remove the leading 1
         }
         return sign | exp | frac;
     }
 
-    // add 6 to the exponent
-    exp = exp + (6 << 23);
+    // Handling normalized numbers
+    exp = exp + (6 << 23); // Increase exponent by 6
 
-    // if there is an overflow
-    if (exp & 0x7F800000) return sign | 0x7F800000;
+    // Check for exponent overflow
+    if (exp >= 0x7F800000) {
+        // Return infinity with the same sign
+        return sign | 0x7F800000;
+    }
 
     return sign | exp | frac;
 }
+
 /*
  * floatNegate - Return bit-level equivalent of expression -f for
  *   floating point argument f.
