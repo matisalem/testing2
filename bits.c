@@ -458,26 +458,24 @@ unsigned floatScale64(unsigned uf) {
     if (exp == 0x7F800000) return uf;
 
     // in case uf is Denormalized
-    if (exp == 0) {  // Denormalized number
-        frac <<= 6; // Multiply the fraction by 64
+    if (exp == 0) {
 
-        // Check if the number becomes normalized
-        if (frac >= 0x00800000) {
-            exp = 0x00800000; // Set to the smallest exponent for normalized numbers
-            frac >>= 1;       // Adjust the fraction to fit into 23 bits
+        // multiply by 64, which is 2^6
+        frac = frac << 6;
+
+        // if the number is normalized by the scaling
+        if (frac & 0x00800000) {
+            exp = (frac & 0x007F8000) << 1;
+            frac &= 0x007FFFFF;
         }
-
-        // Ensure the fraction fits into 23 bits
-        frac &= 0x007FFFFF;
         return sign | exp | frac;
     }
-
 
     // add 6 to the exponent
     exp = exp + (6 << 23);
 
     // if there is an overflow
-    if (exp >= 0x7F800000) return sign | 0x7F800000;
+    if (exp & 0x7F800000) return sign | 0x7F800000;
 
     return sign | exp | frac;
 }
