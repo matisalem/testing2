@@ -448,26 +448,23 @@ unsigned floatInt2Float(int x) {
  *   Rating: 4
  */
 unsigned floatScale64(unsigned uf) {
-    unsigned sign = uf & 0x80000000;  // Extracting the sign bit.
-    unsigned exp = uf & 0x7F800000;   // Extracting the exponent bits.
-    unsigned frac = uf & 0x007FFFFF;  // Extracting the fraction bits.
-
-    // Handling special cases: NaN and infinity.
-    if (exp == 0x7F800000) {
-        return uf;
-    }
-
-    // Handling denormalized numbers.
-    if (exp == 0) {
-        frac <<= 1;  // Shifting the fraction bits to the left by 1.
-        if ((frac & 0x00800000) == 0x00800000) {  // Checking if the hidden bit is set.
-            exp = 0x00800000;  // Setting the exponent to the smallest normalized value.
+    int sign = uf & 0x80000000;
+    int num_loop = 6;
+    while (num_loop--) {
+        int exponent = uf & 0x7F800000;
+        int exponent_is_zero = !exponent;
+        if (exponent_is_zero) {
+            uf = sign | (uf << 1);
+        } else if (exponent != 0x7F800000) {
+            uf = uf + 0x800000;
+            exponent = uf & 0x7F800000;
+            // Check if grater than INF
+            if (exponent == 0x7F800000) {
+                uf = uf & 0xFF800000;  // clear fraction
+            }
         }
-    } else {
-        exp += 0x00800000;  // Incrementing the exponent by 64 (0x00800000) to multiply it by 64.
     }
-
-    return sign | exp | frac;
+    return uf;
 }
 
 
