@@ -375,15 +375,21 @@ unsigned floatInt2Float(int x) {
     int roundBit = 0;
     int stickyBit = 0;
     unsigned fraction = 0;
+    int mask = 1 << 31;
 
     unsigned sign = 0;
+
     // if x == 0, return 0
     if (x == 0) return 0;
 
     // if x is negative
     if (x < 0) {
         sign = 0x80000000; // this is sign bit for negatives
-        x = -x;
+        if (x == mask) {
+            x = mask; // Keep x as INT_MIN
+        } else {
+            x = -x; // Convert x to positive for other negative values
+        }
     }
 
     // until finds first 1 starting from left, keep going
