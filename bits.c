@@ -423,20 +423,20 @@ unsigned floatInt2Float(int x) {
 
     if ((roundBit && stickyBit) || (roundBit && (fraction & 1))) {
         fraction++;
-     //   if (fraction >> 23) {
-            // Handle overflow in fraction
-      //      fraction = 0;
-      //      exponent++;
-     //   }
+        if (fraction >> 23) {
+         //    Handle overflow in fraction
+            fraction = 0;
+            exponent++;
+        }
     }
 
     // Construct the final floating-point representation
-  //  return sign | (exponent << 23) | (fraction & 0x007FFFFF);
+    return sign | (exponent << 23) | (fraction & 0x007FFFFF);
 
-    if ((roundBit && stickyBit) || (roundBit && (fraction & 1))) fraction++;
+  //  if ((roundBit && stickyBit) || (roundBit && (fraction & 1))) fraction++;
 
-     return sign | ((exponent << 23) & 0x7F800000) | (fraction & 0x007FFFFF);
-     
+  //   return sign | ((exponent << 23) & 0x7F800000) | (fraction & 0x007FFFFF);
+
 
     //if ((roundBit && stickyBit) || (roundBit && (fraction & 1))) fraction++;
 
