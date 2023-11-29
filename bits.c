@@ -461,25 +461,13 @@ unsigned floatScale64(unsigned uf) {
         // Denormalized number: scale the fraction
         fraction <<= 6;
 
+        // Handle the case where scaling results in a normalized number
         if (fraction & 0x00800000) {
-            // Fraction has overflowed into the exponent field
             exponent = 0x00800000; // Adjust exponent to 1
-            fraction &= 0x007FFFFF; // Remove the overflowed bit
+            fraction &= 0x007FFFFF; // Mask off the leading 1
         }
 
-        // Check for any further normalization needed
-        while ((fraction & 0x00800000) == 0 && fraction != 0) {
-            fraction <<= 1;
-            exponent -= 0x00800000; // Adjust exponent
-        }
-
-        if (exponent == 0) {
-            // Still a denormalized number
-            return sign | fraction;
-        }
-
-        // Normalized number
-        return sign | (exponent + 0x00800000) | (fraction & 0x007FFFFF);
+        return sign | exponent | fraction;
     }
 
     // Normalized number: increment the exponent
@@ -491,6 +479,7 @@ unsigned floatScale64(unsigned uf) {
 
     return sign | exponent | fraction;
 }
+
 
 
 
