@@ -322,16 +322,15 @@ int greatestBitPos(int x) {
     int e = d | (d >> 16);
 
     // create a mask that has 0 at the position of the most significant 1 bit of x and 1s elsewhere
-    int f = (~e) + 1;
-
-    int q = a^(a>>1);
-    int w = 1<<31;
+  //  int f = (~e) + 1;
+    int q = (e^(e>>1));
+    int w = (1<<31);
 
 
     return (q | w) & a;
 
     // use the mask to isolate the most significant 1 bit of x, setting all other bits to 0
- //   return x & f;
+  //  return x & f;
 }
 /*
  * isNonZero - Check whether x is nonzero using
