@@ -471,14 +471,18 @@ unsigned floatScale64(unsigned uf) {
     }
 
     // Handle normalized numbers
-    if (exp <= 0x78800000) { // Check for non-overflow cases
-        exp += (6 << 23);
-        return sign | exp | frac;
+    // Increment exponent by 6 to scale by 64
+    exp += (6 << 23);
+
+    // Check for overflow
+    if (exp >= 0x7F800000) {
+        // Return infinity of the same sign
+        return sign | 0x7F800000;
     } else {
-        // Saturate at the largest finite value
-        return sign | 0x7F7FFFFF;
+        return sign | exp | frac;
     }
 }
+
 
 
 
