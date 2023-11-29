@@ -450,9 +450,10 @@ unsigned floatInt2Float(int x) {
 unsigned floatScale64(unsigned input) {
     // Extracting the sign bit from the input
     int signBit = input & 0x80000000;
+    int i;
 
     // We need to multiply by 64, equivalent to 6 consecutive doublings (2^6)
-    for (int i = 0; i < 6; i++) {
+    for (i = 0; i < 6; i++) {
         // Extracting the exponent field from the input
         int exponentField = input & 0x7F800000;
 
