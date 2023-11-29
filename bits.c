@@ -394,6 +394,7 @@ unsigned floatInt2Float(int x) {
 
     // until finds first 1 starting from left, keep going
     while ((x & (1 << masGrande)) == 0) {
+        x <<= 1;
         masGrande--;
     }
 
@@ -401,22 +402,33 @@ unsigned floatInt2Float(int x) {
     // and in single-precision floating-point numbers, bias is 127
     exponent = masGrande + 127;
 
-    // normalize the fraction by aligning the msb of x to the leftmost position.
-    normalized = x << (31 - masGrande); // Left align the MSB
+// Adjust for bias (127) in single-precision floating-point format
+    exponent += 127;
 
-    // clear the sign bit and shift it right by 8 bits
-    // because the fraction part of a single-precision floating-point number occupies 23 bits
-    fraction = (normalized & 0x7FFFFFFF) >> 8;
+    // Handle subnormal numbers
+    if (exponent < 127) {
+        // Adjust for subnormal representation
+        exponent = 0;
+        fraction = x >> 8; // Subnormal numbers use a different representation
+    } else {
+        // Normalize the fraction by removing the MSB and shifting
+        fraction = (x & (~mask)) >> 8;
+    }
 
-    // get the bit immediately to the right of the fraction
-    roundBit = (normalized >> 7) & 1;
+    // Rounding: Consider the bit right to the fraction and sticky bit
+    roundBit = (x >> 7) & 1;
+    stickyBit = x & 0x7F;
+    if ((roundBit && stickyBit) || (roundBit && (fraction & 1))) {
+        fraction++;
+        if (fraction >> 23) {
+            // Handle overflow in fraction
+            fraction = 0;
+            exponent++;
+        }
+    }
 
-    // remaining bits.
-    stickyBit = normalized & 0x7F;
-    if ((roundBit && stickyBit) || (roundBit && (fraction & 1))) fraction++;
-
-    // return the final number combination
-    return sign | ((exponent << 23) & 0x7F800000) | (fraction & 0x007FFFFF);
+    // Construct the final floating-point representation
+    return sign | (exponent << 23) | (fraction & 0x007FFFFF);
 
 }
 /*
