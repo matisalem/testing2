@@ -448,7 +448,6 @@ unsigned floatInt2Float(int x) {
  *   Rating: 4
  */
 unsigned floatScale64(unsigned uf) {
-
     unsigned sign = uf & 0x80000000;
     unsigned exp = uf & 0x7F800000;
     unsigned frac = uf & 0x007FFFFF;
@@ -457,10 +456,12 @@ unsigned floatScale64(unsigned uf) {
 
     if (exp == 0) { // Denormalized
         frac <<= 6; // Multiply by 64
-        if (frac & 0x00800000) { // Check for normalization
-            exp = 0x00800000; // Set exponent to 1 (after bias adjustment)
-            frac &= 0x007FFFFF; // Remove leading 1 from fraction
+        while ((frac & 0x00800000) == 0 && frac != 0) {
+            // Normalize the fraction if possible
+            frac <<= 1;
+            exp -= 0x00800000; // Decrease exponent (bias adjustment)
         }
+        frac &= 0x007FFFFF; // Remove leading 1 from fraction
     } else { // Normalized
         exp += (6 << 23); // Add 6 to the exponent
         if (exp & 0x80000000) { // Overflow check
@@ -470,6 +471,7 @@ unsigned floatScale64(unsigned uf) {
 
     return sign | exp | frac;
 }
+
 /*
  * floatNegate - Return bit-level equivalent of expression -f for
  *   floating point argument f.
