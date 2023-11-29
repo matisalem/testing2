@@ -392,11 +392,11 @@ unsigned floatInt2Float(int x) {
 
     // until finds first 1 starting from left, keep going
     while ((x & (1 << exponent)) == 0) {
+        x <<= 1;
         exponent--;
     }
 
     // normalize the fraction by aligning the msb of x to the leftmost position.
-    x = x << (31 - exponent); // Left align the MSB
 
     // get the exponent, and use 127 as bias becuase it is used to avoid having to store negative numbers
     // and in single-precision floating-point numbers, bias is 127
