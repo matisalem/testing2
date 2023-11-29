@@ -455,14 +455,16 @@ unsigned floatScale64(unsigned uf) {
     // Handle NaN and infinity
     if (exp == 0x7F800000) return uf;
 
-    // Handle denormalized numbers
+    // Handle denormalized numbers (zero or very small numbers)
     if (exp == 0) {
         frac <<= 6; // Multiply the fraction by 64
-        if (frac & 0x00800000) { // Check if the number is normalized now
-            exp = 0x00800000; // Set the least significant bit of exponent
-            frac &= 0x007FFFFF; // Mask out the leading 1
+        while ((frac & 0x00800000) == 0 && frac != 0) {
+            // Normalize the number if possible
+            frac <<= 1;
+            exp -= 0x00800000;
         }
-        return sign | exp | frac;
+        frac &= 0x007FFFFF; // Remove the leading 1
+        return sign | (exp + 0x00800000) | frac;
     }
 
     // Handle normalized numbers
@@ -473,6 +475,7 @@ unsigned floatScale64(unsigned uf) {
         return sign | 0x7F800000; // Return infinity of the same sign
     }
 }
+
 
 /*
  * floatNegate - Return bit-level equivalent of expression -f for
