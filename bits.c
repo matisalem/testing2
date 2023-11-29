@@ -458,20 +458,21 @@ unsigned floatScale64(unsigned uf) {
     }
 
     if (exponent == 0) {
-        // Denormalized number: scale the fraction
-        fraction <<= 6;
+        // Denormalized number
+        fraction <<= 6; // Scale the fraction by 64
 
-        // Handle the case where scaling results in a normalized number
-        if (fraction & 0x00800000) {
-            exponent = 0x00800000; // Adjust exponent to 1
-            fraction &= 0x007FFFFF; // Mask off the leading 1
+        if (fraction & 0xFF000000) {
+            // Handle overflow by normalizing the number
+            int shift = __builtin_clz(fraction) - 8; // Count leading zeros, excluding the sign bit
+            fraction >>= shift; // Right shift the fraction to fit into 23 bits
+            exponent = (127 - 1 - shift + 6) << 23; // Adjust exponent (subtract 1 for bias, subtract shift, add 6 for multiplication)
         }
 
-        return sign | exponent | fraction;
+        return sign | exponent | (fraction & 0x007FFFFF);
     }
 
-    // Normalized number: increment the exponent
-    exponent += (6 << 23);
+    // Normalized number
+    exponent += (6 << 23); // Scale the exponent
     if (exponent >= 0x7F800000) {
         // Overflow: return infinity
         return sign | 0x7F800000;
@@ -479,6 +480,7 @@ unsigned floatScale64(unsigned uf) {
 
     return sign | exponent | fraction;
 }
+
 
 
 
