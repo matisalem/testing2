@@ -448,6 +448,9 @@ unsigned floatInt2Float(int x) {
  *   Rating: 4
  */
 unsigned floatScale64(unsigned uf) {
+    // Check for zero
+    if (uf == 0) return 0;
+
     unsigned sign = uf & 0x80000000;
     unsigned exp = uf & 0x7F800000;
     unsigned frac = uf & 0x007FFFFF;
@@ -455,7 +458,7 @@ unsigned floatScale64(unsigned uf) {
     // Handle NaN and infinity
     if (exp == 0x7F800000) return uf;
 
-    // Handle denormalized numbers (zero or very small numbers)
+    // Handle denormalized numbers (very small numbers)
     if (exp == 0) {
         frac <<= 6; // Multiply the fraction by 64
         while ((frac & 0x00800000) == 0 && frac != 0) {
@@ -475,6 +478,7 @@ unsigned floatScale64(unsigned uf) {
         return sign | 0x7F800000; // Return infinity of the same sign
     }
 }
+
 
 
 /*
