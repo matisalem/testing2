@@ -458,15 +458,16 @@ unsigned floatScale64(unsigned uf) {
     if (exp == 0x7F800000) return uf;
 
     // in case uf is Denormalized
-    if (exp == 0) {
+    if (exp == 0) {  // Denormalized number
+        frac = frac << 6;  // Multiply the fraction by 64
 
-        // multiply by 64, which is 2^6
-        frac = frac << 6;
-
-        // if the number is normalized by the scaling
-        if (frac & 0x00800000) {
-            exp = 0x00800000; // Set to the smallest exponent for normalized numbers
-            frac &= 0x007FFFFF;
+        if (frac & 0x00800000) {  // Check if the number is normalized
+            exp = 0x00800000;  // Set to the smallest exponent for normalized numbers
+            frac &= 0x007FFFFF;  // Mask out the leading 1 (normalized form)
+        } else {
+            // If the number remains a denormalized number, we need to adjust the fraction
+            // by shifting it right to keep only the 23 most significant bits
+            frac >>= 1; // This is required to fit the fraction into its field
         }
         return sign | exp | frac;
     }
