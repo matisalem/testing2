@@ -448,53 +448,35 @@ unsigned floatInt2Float(int x) {
  *   Rating: 4
  */
 unsigned floatScale64(unsigned uf) {
-    // Check for zero, negative zero, NaN, and infinity
-    if ((uf & 0x7FFFFFFF) == 0 || (uf & 0x7F800000) == 0x7F800000) {
+    unsigned sign = uf & 0x80000000; // Extract sign bit
+    unsigned exponent = uf & 0x7F800000; // Extract exponent
+    unsigned fraction = uf & 0x007FFFFF; // Extract fraction
+
+    if (exponent == 0x7F800000) {
+        // NaN or infinity: return the original number
         return uf;
     }
 
-    unsigned sign = uf & 0x80000000;
-    unsigned exp = uf & 0x7F800000;
-    unsigned frac = uf & 0x007FFFFF;
-
-    // Handle denormalized numbers (very small numbers)
-    if (exp == 0) {
-        frac <<= 6; // Multiply the fraction by 64
-
-        // Check if the number can be normalized
-        if (frac & 0x3F800000) {
-            // Count the number of leading zeros in the fraction part
-            int shift = 0;
-            while ((frac & 0x40000000) == 0) {
-                frac <<= 1;
-                shift++;
-            }
-            // Adjust exponent
-            exp = ((127 - shift + 6) << 23) & 0x7F800000;
-            frac &= 0x007FFFFF;
+    if (exponent == 0) {
+        // Denormalized number (very small number)
+        fraction <<= 6; // Scale the fraction
+        if (fraction & 0x00800000) {
+            // Handle overflow of fraction into exponent
+            exponent = 0x00800000;
+            fraction &= 0x007FFFFF;
         }
-        return sign | exp | frac;
+        return sign | exponent | fraction;
     }
 
-    // Handle normalized numbers
-    exp = (exp >> 23) - 127; // Unbias the exponent
-    exp += 6; // Scale the exponent
-
-    // Check for overflow to infinity
-    if (exp >= 128) {
-        return sign | 0x7F800000; // Infinity with the same sign
-    } else {
-        exp = (exp + 127) << 23; // Rebias the exponent
-        return sign | exp | frac;
+    // Normalized number: increment the exponent
+    exponent += (6 << 23);
+    if (exponent > 0x7F800000) {
+        // Overflow: return infinity
+        return sign | 0x7F800000;
     }
+
+    return sign | exponent | fraction;
 }
-
-
-
-
-
-
-
 
 /*
  * floatNegate - Return bit-level equivalent of expression -f for
