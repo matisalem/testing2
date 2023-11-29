@@ -459,19 +459,17 @@ unsigned floatScale64(unsigned uf) {
 
     // in case uf is Denormalized
     if (exp == 0) {  // Denormalized number
-        frac <<= 6;  // Multiply the fraction by 64
+        frac <<= 6; // Multiply the fraction by 64
 
-        if (frac & 0x04000000) {  // Check if the number becomes normalized
-            exp = 0x01000000;  // Increment the exponent
-            frac >>= 18;  // Right shift to adjust the fraction (keeping 23 bits)
-        } else {
-            // Remain in denormalized form but adjust the fraction to fit 23 bits
-            while (!(frac & 0x00800000) && frac != 0) {
-                frac <<= 1;
-            }
-            frac >>= 1;
+        // Check if the number becomes normalized
+        if (frac >= 0x00800000) {
+            exp = 0x00800000; // Set to the smallest exponent for normalized numbers
+            frac >>= 1;       // Adjust the fraction to fit into 23 bits
         }
-        return sign | exp | (frac & 0x007FFFFF);
+
+        // Ensure the fraction fits into 23 bits
+        frac &= 0x007FFFFF;
+        return sign | exp | frac;
     }
 
 
