@@ -180,8 +180,7 @@ NOTES:
  */
 int bitNor(int x, int y) {
     // deMorgan's Law
-    int mandar = ~x&~y;
-    return mandar;
+    return ~x&~y;
 }
 /*
  * TMax - return maximum two's complement integer
