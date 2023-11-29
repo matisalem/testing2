@@ -461,22 +461,23 @@ unsigned floatScale64(unsigned uf) {
         // Denormalized number (very small number)
         fraction <<= 6; // Scale the fraction
         if (fraction & 0x00800000) {
-            // Handle overflow of fraction into exponent
-            exponent = 0x00800000;
-            fraction &= 0x007FFFFF;
+            // Leading bit of fraction is now in the exponent's place
+            exponent = 0x00800000; // Increment exponent
+            fraction &= 0x007FFFFF; // Adjust the fraction
         }
         return sign | exponent | fraction;
     }
 
     // Normalized number: increment the exponent
     exponent += (6 << 23);
-    if (exponent > 0x7F800000) {
+    if (exponent >= 0x7F800000) {
         // Overflow: return infinity
         return sign | 0x7F800000;
     }
 
     return sign | exponent | fraction;
 }
+
 
 /*
  * floatNegate - Return bit-level equivalent of expression -f for
