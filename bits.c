@@ -456,12 +456,10 @@ unsigned floatScale64(unsigned uf) {
 
     if (exp == 0) { // Denormalized
         frac <<= 6; // Multiply by 64
-        while ((frac & 0x00800000) == 0 && frac != 0) {
-            // Normalize the fraction if possible
-            frac <<= 1;
-            exp -= 0x00800000; // Decrease exponent (bias adjustment)
+        if (frac & 0x00800000) { // Check for normalization
+            exp = 0x00800000; // Set exponent to 1 (after bias adjustment)
+            frac &= 0x007FFFFF; // Remove leading 1 from fraction
         }
-        frac &= 0x007FFFFF; // Remove leading 1 from fraction
     } else { // Normalized
         exp += (6 << 23); // Add 6 to the exponent
         if (exp & 0x80000000) { // Overflow check
@@ -471,6 +469,7 @@ unsigned floatScale64(unsigned uf) {
 
     return sign | exp | frac;
 }
+
 
 /*
  * floatNegate - Return bit-level equivalent of expression -f for
