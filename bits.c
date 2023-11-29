@@ -392,7 +392,7 @@ unsigned floatInt2Float(int x) {
 
     // until finds first 1 starting from left, keep going
     while ((x & (1 << exponent)) == 0) {
-        x  = x << 1;
+        x <<= 1;
         exponent--;
     }
 
@@ -400,7 +400,7 @@ unsigned floatInt2Float(int x) {
 
     // get the exponent, and use 127 as bias becuase it is used to avoid having to store negative numbers
     // and in single-precision floating-point numbers, bias is 127
-    exponent = exponent + 127;
+    exponent += 127;
 
     // Handle subnormal numbers
     if (exponent < 127) {
@@ -417,7 +417,6 @@ unsigned floatInt2Float(int x) {
 
     // remaining bits.
     stickyBit = x & 0x7F;
-
 
     if ((roundBit && stickyBit) || (roundBit && (fraction & 1))) {
         fraction++;
