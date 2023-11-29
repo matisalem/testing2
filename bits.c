@@ -436,19 +436,8 @@ unsigned floatInt2Float(int x) {
     if ((roundBit && stickyBit) || (roundBit && (fraction & 1))) fraction++;
 
      return sign | ((exponent << 23) & 0x7F800000) | (fraction & 0x007FFFFF);
+     
 
-
-
-
-    // clear the sign bit and shift it right by 8 bits
-    // because the fraction part of a single-precision floating-point number occupies 23 bits
-    //fraction = (normalized & 0x7FFFFFFF) >> 8;
-
-    // get the bit immediately to the right of the fraction
-    //roundBit = (normalized >> 7) & 1;
-
-    // remaining bits.
-   // stickyBit = normalized & 0x7F;
     //if ((roundBit && stickyBit) || (roundBit && (fraction & 1))) fraction++;
 
     // return the final number combination
