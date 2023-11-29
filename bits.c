@@ -452,26 +452,32 @@ unsigned floatScale64(unsigned uf) {
     unsigned exp = uf & 0x7F800000;
     unsigned frac = uf & 0x007FFFFF;
 
-    if (exp == 0x7F800000) return uf;  // NaN check
+    // Check for NaN or infinity
+    if (exp == 0x7F800000) return uf;
 
     if (exp == 0) {  // Denormalized
-        frac = frac << 6;
+        frac <<= 6;  // Scale by 64
 
-        if (frac & 0x00800000) {  // Normalization check
-            exp = 0x00800000;  // Set exponent to 1
-            frac &= 0x007FFFFF;  // Adjust fraction
+        if (frac & 0xFF800000) {  // Check if normalization is needed
+            // Normalize the number
+            int shift = __builtin_clz(frac) - 8;  // Count leading zeros and adjust for 32-bit
+            exp = (127 - shift) << 23;  // Set the exponent part
+            frac <<= (shift + 1);  // Normalize the fraction
+            frac &= 0x007FFFFF;  // Mask off the leading bit
         }
 
         return sign | exp | frac;
     }
 
     // Normalized case
-    exp = exp + (6 << 23);
+    exp += 6 << 23;  // Add 6 to the exponent
 
-    if (exp & 0x80000000) return sign | 0x7F800000;  // Overflow check
+    // Check for overflow
+    if (exp & 0x80000000) return sign | 0x7F800000;
 
     return sign | exp | frac;
 }
+
 
 /*
  * floatNegate - Return bit-level equivalent of expression -f for
