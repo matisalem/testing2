@@ -314,18 +314,17 @@ int logicalShift(int x, int n) {
  */
 int greatestBitPos(int x) {
 
-    // propagate the most significant 1 bit of x across to the right, ensuring that all bits to the right of this bit are set to 1
-    int a = x | (x >> 1);
-    int b = a | (a >> 2);
-    int c = b | (b >> 4);
-    int d = c | (c >> 8);
-    int e = d | (d >> 16);
-
-    // create a mask that has 0 at the position of the most significant 1 bit of x and 1s elsewhere
-    int f = (~e) + 1;
-
-    // use the mask to isolate the most significant 1 bit of x, setting all other bits to 0
-    return x & f;
+    int a = x|(x>>1);
+    a=(a|(a>>2));
+    a=(a|(a>>4));
+    a=(a|(a>>8));
+    a=(a|(a>>16));
+    //extracting the MSB by getting rid of all the other 1s. This is
+    //accomploshed by the XOR with a shifted over 1 bit to the right and
+    //ORed with the largest negative number which then altogether is
+    //ANDed with the final a value. It essentially pulls out the extra
+    //ones for me and leaves me with the MSB containing the 1.
+    return ((a^(a>>1)) | (1<<31)) & a;
 }
 /*
  * isNonZero - Check whether x is nonzero using
