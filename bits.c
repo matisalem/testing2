@@ -458,14 +458,24 @@ unsigned floatScale64(unsigned uf) {
     }
 
     if (exponent == 0) {
-        // Denormalized number (very small number)
-        fraction <<= 6; // Scale the fraction
-        if (fraction & 0x00800000) {
-            // Leading bit of fraction is now in the exponent's place
-            exponent = 0x00800000; // Increment exponent
-            fraction &= 0x007FFFFF; // Adjust the fraction
+        // Denormalized number: scale the fraction
+        fraction <<= 6;
+
+        // Normalize if necessary
+        while ((fraction & 0x00800000) == 0 && fraction != 0) {
+            fraction <<= 1;
+            exponent -= 0x00800000; // Decrease exponent (increase the power of 2)
         }
-        return sign | exponent | fraction;
+
+        if ((exponent & 0x7F800000) == 0) {
+            // Still a denormalized number
+            return sign | (fraction & 0x007FFFFF);
+        } else {
+            // Now a normalized number
+            fraction >>= 1; // Shift right to adjust for leading 1
+            exponent += 0x01000000; // Correct the exponent
+            return sign | exponent | (fraction & 0x007FFFFF);
+        }
     }
 
     // Normalized number: increment the exponent
@@ -477,6 +487,7 @@ unsigned floatScale64(unsigned uf) {
 
     return sign | exponent | fraction;
 }
+
 
 
 /*
