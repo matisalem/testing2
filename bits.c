@@ -426,7 +426,7 @@ unsigned floatInt2Float(int x) {
 
         // if adding 1 to fraction caused an overflow
         if (fraction >> 23) {
-         // manage overflow in fraction
+            // manage overflow in fraction
             fraction = 0;
             exponent++;
         }
