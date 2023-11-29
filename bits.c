@@ -288,17 +288,17 @@ int logicalShift(int x, int n) {
     // of course, begin by shifting
     int shift = x >> n;
 
-    // now lets create a mask by shifting 1 into the leftmost position
+    // now lets start making a mask by shifting 1 into the leftmost position
     int oneBit = 1 << 31;
 
 
-    // shift one bit by n
+    // shift onr bit by n to make a number where the n leftmost bits are 1 and the rest are 0
     int nShifted = oneBit >> n;
 
-    // cereate a mask...
+    // now invert it and shift by one to create a mask that has all 1 except the n leftmost bits.
     int mask = ~(nShifted << 1);
 
-
+    // return the shift and the mask applied
     return shift & mask;
 }
 //4
@@ -312,21 +312,20 @@ int logicalShift(int x, int n) {
  */
 int greatestBitPos(int x) {
 
-    // propagate the most significant 1 bit of x across to the right, ensuring that all bits to the right of this bit are set to 1
+    // move the most significant 1 bit of x across to the right, so all bits to the right are 1
     int a = x | (x >> 1);
     int b = a | (a >> 2);
     int c = b | (b >> 4);
     int d = c | (c >> 8);
     int e = d | (d >> 16);
 
-    // create a mask that has 0 at the position of the most significant 1 bit of x and 1s elsewhere
-    // it turns off all bits that were set during the propagation, except the most significant one.
+    // create a mask that has 0 at the position of the most significant 1 bit of x
     int elon = (e^(e>>1));
 
-    // mask with only the most significant bit set, this is for edge cases!
+    // create a second mask with only the most significant bit set. This is for edge cases
     int  mask = (1<<31);
 
-    // first, combine both masks to ensure the sign bit is set right,
+    // first, combine both masks to make sure the sign bit is correct,
     // and then take out the most significant bit from e. Return the result
     return (elon | mask) & e;
 }
@@ -340,7 +339,7 @@ int greatestBitPos(int x) {
  */
 int isNonZero(int x) {
 
-    // shift x 31 bits to the right, isolating the sign bit
+    // shift x 31 bits to the right, leaving only the sign bit
     int signoX = (x >> 31) & 1;
 
     // negate x using ~ and + 1
@@ -380,15 +379,17 @@ unsigned floatInt2Float(int x) {
 
     // if x is negative
     if (x < 0) {
-        sign = 0x80000000; // this is sign bit for negatives
+        // this is sign bit for negatives
+        sign = 0x80000000;
         if (x == mask) {
-            x = mask; // keep x as the minimum integer
+            // keep x as the minimum integer
+            x = mask;
         } else {
             x = -x; // turn x to its positive
         }
     }
 
-    //  Find the position of the most significant bit (remember exponent at first == 31)
+    //  Find the position of the most significant bit (exponent at first == 31)
     while (!(x & mask)) {
 
         // normalize the fraction by aligning the msb of x to the leftmost position.
@@ -453,7 +454,7 @@ unsigned floatScale64(unsigned input) {
 
     // we need to multiply by 64, equivalent to 6 consecutive doublings (2^6)
     for (i = 0; i < 6; i++) {
-        // extracting the exponent field from the input
+        // take out exponent
         int exponent = input & 0x7F800000;
 
         // check if the exponent is denormalized
@@ -467,7 +468,7 @@ unsigned floatScale64(unsigned input) {
             // calculate exponent again
             exponent = input & 0x7F800000;
 
-            // if there is an overflow clear the fraction field
+            // if there is an overflow clear the fraction
             if (exponent == 0x7F800000) input &= 0xFF800000;
         }
     }
@@ -494,10 +495,9 @@ unsigned floatNegate(unsigned uf) {
     // extract the fraction part by keeping only the last 23 bits
     unsigned fraction = uf & 0x7FFFFF;
 
-    // check for NaN, by looking if exponent is all 1s (0xFF) and fraction is not xero
+    // check for NaN
     if (exponent == 0xFF && fraction != 0) return uf;
 
-    // Toggle the sign bit:
-    // - XOR with 0x80000000 flips the most significant bit
+    // flip the most significant bit using ^ 0x80000000 to invert sign bit
     return uf ^ 0x80000000;
 }
