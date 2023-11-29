@@ -401,20 +401,18 @@ unsigned floatInt2Float(int x) {
     // and in single-precision floating-point numbers, bias is 127
     exponent = masGrande + 127;
 
+    // normalize the fraction by aligning the msb of x to the leftmost position.
+    normalized = x << (31 - masGrande); // Left align the MSB
+
     // Handle subnormal numbers
     if (exponent < 127) {
         // Adjust for subnormal representation
         exponent = 0;
-        fraction = x >> 8; // Subnormal numbers use a different representation
+        fraction = normalized >> 8; // Subnormal numbers use a different representation
     } else {
         // Normalize the fraction by removing the MSB and shifting
-        fraction = (x & (~mask)) >> 8;
+        fraction = (normalized & (~mask)) >> 8;
     }
-
-
-    // normalize the fraction by aligning the msb of x to the leftmost position.
-    normalized = x << (31 - masGrande); // Left align the MSB
-
 
     // get the bit immediately to the right of the fraction
     roundBit = (normalized >> 7) & 1;
