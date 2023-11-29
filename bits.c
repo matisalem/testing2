@@ -460,28 +460,32 @@ unsigned floatScale64(unsigned uf) {
 
     // Handle denormalized numbers (very small numbers)
     if (exp == 0) {
-        frac <<= 6; // Multiply the fraction by 64
+        frac = frac << 6; // Multiply the fraction by 64
+
+        // Normalize the number if possible
         while ((frac & 0x00800000) == 0 && frac != 0) {
-            // Normalize the number if possible
             frac <<= 1;
             exp -= 0x00800000;
         }
-        frac &= 0x007FFFFF; // Remove the leading 1
-        return sign | (exp + 0x00800000) | frac;
+        if (exp < 0x00800000) {
+            // Still denormalized
+            return sign | (frac & 0x007FFFFF);
+        } else {
+            // Becomes normalized
+            return sign | 0x00800000 | (frac & 0x007FFFFF);
+        }
     }
 
     // Handle normalized numbers
-    // Increment exponent by 6 to scale by 64
-    exp += (6 << 23);
-
-    // Check for overflow
-    if (exp >= 0x7F800000) {
-        // Return infinity of the same sign
-        return sign | 0x7F800000;
-    } else {
+    if (exp <= 0x78800000) {
+        exp += (6 << 23); // Scale the exponent
         return sign | exp | frac;
+    } else {
+        // Overflow to infinity
+        return sign | 0x7F800000;
     }
 }
+
 
 
 
