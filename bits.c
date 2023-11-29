@@ -370,7 +370,6 @@ unsigned floatInt2Float(int x) {
     // find where most significant bit is
     // variables I'll use later, but somehow compiler threw an error if created later
     int exponent = 31;
-    int normalized = 0;
     int roundBit = 0;
     int stickyBit = 0;
     unsigned fraction = 0;
@@ -397,7 +396,7 @@ unsigned floatInt2Float(int x) {
     }
 
     // normalize the fraction by aligning the msb of x to the leftmost position.
-    normalized = x << (31 - exponent); // Left align the MSB
+    x = x << (31 - exponent); // Left align the MSB
 
     // get the exponent, and use 127 as bias becuase it is used to avoid having to store negative numbers
     // and in single-precision floating-point numbers, bias is 127
@@ -407,17 +406,17 @@ unsigned floatInt2Float(int x) {
     if (exponent < 127) {
         // Adjust for subnormal representation
         exponent = 0;
-        fraction = normalized >> 8; // Subnormal numbers use a different representation
+        fraction = x >> 8; // Subnormal numbers use a different representation
     } else {
         // Normalize the fraction by removing the MSB and shifting
-        fraction = (normalized & (~mask)) >> 8;
+        fraction = (x & (~mask)) >> 8;
     }
 
     // get the bit immediately to the right of the fraction
-    roundBit = (normalized >> 7) & 1;
+    roundBit = (x >> 7) & 1;
 
     // remaining bits.
-    stickyBit = normalized & 0x7F;
+    stickyBit = x & 0x7F;
 
 
     if ((roundBit && stickyBit) || (roundBit && (fraction & 1))) {
