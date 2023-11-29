@@ -391,7 +391,7 @@ unsigned floatInt2Float(int x) {
     }
 
     // until finds first 1 starting from left, keep going
-    while ((x & (1 << exponent)) == 0) {
+    while (!(x & mask)) {
         x <<= 1;
         exponent--;
     }
