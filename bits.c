@@ -421,28 +421,20 @@ unsigned floatInt2Float(int x) {
     stickyBit = x & 0x7F;
 
 
+    // rounding logic to handle the bits that are right of the target precision
     if ((roundBit && stickyBit) || (roundBit && (fraction & 1))) {
         fraction++;
+
+        // if adding 1 to fraction caused an overflow
         if (fraction >> 23) {
-         //    Handle overflow in fraction
+         // manage overflow in fraction
             fraction = 0;
             exponent++;
         }
     }
 
-    // Construct the final floating-point representation
+    // construct the final floating-point representation
     return sign | (exponent << 23) | (fraction & 0x007FFFFF);
-
-  //  if ((roundBit && stickyBit) || (roundBit && (fraction & 1))) fraction++;
-
-  //   return sign | ((exponent << 23) & 0x7F800000) | (fraction & 0x007FFFFF);
-
-
-    //if ((roundBit && stickyBit) || (roundBit && (fraction & 1))) fraction++;
-
-    // return the final number combination
-   // return sign | ((exponent << 23) & 0x7F800000) | (fraction & 0x007FFFFF);
-
 }
 /*
  * floatScale64 - Return bit-level equivalent of expression 64*f for
