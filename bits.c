@@ -417,7 +417,7 @@ unsigned floatInt2Float(int x) {
 
 
     // get the bit immediately to the right of the fraction
-    roundBit = (x >> 7) & 1;
+    roundBit = (normalized >> 7) & 1;
 
     // remaining bits.
     stickyBit = normalized & 0x7F;
