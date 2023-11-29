@@ -384,31 +384,33 @@ unsigned floatInt2Float(int x) {
     if (x < 0) {
         sign = 0x80000000; // this is sign bit for negatives
         if (x == mask) {
-            x = mask; // Keep x as INT_MIN
+            x = mask; // keep x as the minimum integer
         } else {
-            x = -x; // Convert x to positive for other negative values
+            x = -x; // turn x to its positive
         }
     }
 
-    // until finds first 1 starting from left, keep going
+    //  Find the position of the most significant bit (remember exponent at first == 31)
     while (!(x & mask)) {
+
+        // normalize the fraction by aligning the msb of x to the leftmost position.
         x <<= 1;
+
+        // getting exponent right
         exponent--;
     }
-
-    // normalize the fraction by aligning the msb of x to the leftmost position.
 
     // get the exponent, and use 127 as bias becuase it is used to avoid having to store negative numbers
     // and in single-precision floating-point numbers, bias is 127
     exponent += 127;
 
-    // Handle subnormal numbers
+    // control paranormal numbers
     if (exponent < 127) {
-        // Adjust for subnormal representation
+        // adjust
         exponent = 0;
-        fraction = x >> 8; // Subnormal numbers use a different representation
+        fraction = x >> 8; // paranormal numbers use a different representation
     } else {
-        // Normalize the fraction by removing the MSB and shifting
+        // normalize the fraction by removing the most significant bit and shifting
         fraction = (x & (~mask)) >> 8;
     }
 
@@ -417,6 +419,7 @@ unsigned floatInt2Float(int x) {
 
     // remaining bits.
     stickyBit = x & 0x7F;
+
 
     if ((roundBit && stickyBit) || (roundBit && (fraction & 1))) {
         fraction++;
@@ -428,7 +431,13 @@ unsigned floatInt2Float(int x) {
     }
 
     // Construct the final floating-point representation
-    return sign | (exponent << 23) | (fraction & 0x007FFFFF);
+  //  return sign | (exponent << 23) | (fraction & 0x007FFFFF);
+
+    if ((roundBit && stickyBit) || (roundBit && (fraction & 1))) fraction++;
+
+     return sign | ((exponent << 23) & 0x7F800000) | (fraction & 0x007FFFFF);
+
+
 
 
     // clear the sign bit and shift it right by 8 bits
