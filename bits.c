@@ -449,33 +449,24 @@ unsigned floatInt2Float(int x) {
  */
 unsigned floatScale64(unsigned uf) {
 
-    // begin by taking the sign, the exponent, and the fraction
     unsigned sign = uf & 0x80000000;
     unsigned exp = uf & 0x7F800000;
     unsigned frac = uf & 0x007FFFFF;
 
-    // return number if exponent is NaN
-    if (exp == 0x7F800000) return uf;
+    if (exp == 0x7F800000) return uf; // NaN or Infinity
 
-    // in case uf is Denormalized
-    if (exp == 0) {
-
-        // multiply by 64, which is 2^6
-        frac = frac << 6;
-
-        // if the number is normalized by the scaling
-        if (frac & 0x00800000) {
-            exp = (frac & 0x007F8000) << 1;
-            frac &= 0x007FFFFF;
+    if (exp == 0) { // Denormalized
+        frac <<= 6; // Multiply by 64
+        if (frac & 0x00800000) { // Check for normalization
+            exp = 0x00800000; // Set exponent to 1 (after bias adjustment)
+            frac &= 0x007FFFFF; // Remove leading 1 from fraction
         }
-        return sign | exp | frac;
+    } else { // Normalized
+        exp += (6 << 23); // Add 6 to the exponent
+        if (exp & 0x80000000) { // Overflow check
+            return sign | 0x7F800000; // Return Infinity
+        }
     }
-
-    // add 6 to the exponent
-    exp = exp + (6 << 23);
-
-    // if there is an overflow
-    if (exp & 0x7F800000) return sign | 0x7F800000;
 
     return sign | exp | frac;
 }
