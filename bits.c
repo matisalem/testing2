@@ -288,18 +288,15 @@ int logicalShift(int x, int n) {
     // of course, begin by shifting
     int shift = x >> n;
 
-    // now we have to build something to correct the leftover bits?
-    // mask begin as -1 (all bits == 1), then shift left by (32 - n), leaving zeros on the right and retains n ones on the left.
-  //  int something = -1 << (32 - n);
+    // now lets create a mask by shifting 1 into the leftmost position
+    int oneBit= 1 << 31;
 
-    // invert so leftmost n bits are zeros and the rightmost (32 - n) bits are ones (opposite as we did above)
-  //  something = ~something;
+    // then right shift on 1 by n, leaving the rest of bits being 1, and then invert it using ~
+    int mask = ~(1 >> n);
 
-    // final calculation, clears the leftmost n bits and keeps rest of them.
- //   int final = shift & something;
 
-    int mask = ~(((1 << 31) >> n) << 1);
-
+    // Shift mask to the right by 1 position to adjust for the initial left shift
+    int finalMask = mask << 1;
 
     return shift & mask;
 }
@@ -474,15 +471,8 @@ unsigned floatScale64(unsigned input) {
         }
     }
 
-    // return
     return input;
 }
-
-
-
-
-
-
 
 /*
  * floatNegate - Return bit-level equivalent of expression -f for
