@@ -325,7 +325,7 @@ int greatestBitPos(int x) {
     int f = (~e) >> 1;
 
     // use the mask to isolate the most significant 1 bit of x, setting all other bits to 0
-    return x & f;
+    return 2;
 }
 /*
  * isNonZero - Check whether x is nonzero using
