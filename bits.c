@@ -289,16 +289,17 @@ int logicalShift(int x, int n) {
     int shift = x >> n;
 
     // now lets create a mask by shifting 1 into the leftmost position
-    int oneBit= 1 << 31;
-
-    // then right shift on 1 by n, leaving the rest of bits being 1, and then invert it using ~
-    int mask = ~(oneBit >> n);
+    int oneBit = 1 << 31;
 
 
-    // Shift mask to the right by 1 position to adjust for the initial left shift
-    int finalMask = mask << 1;
+    // shift one bit by n
+    int nShifted = oneBit >> n;
 
-    return shift & finalMask;
+    // cereate a mask...
+    int mask = ~(nShifted << 1);
+
+
+    return shift & mask;
 }
 //4
 /*
